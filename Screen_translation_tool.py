@@ -135,7 +135,6 @@ translated_text_box.grid(row=1, column=1)
 translate_button = tk.Button(tab1, text="翻訳する文を選択", command=start_translation)
 translate_button.pack()
 
-# メモ保存のUI要素を翻訳タブに追加
 title_label = Label(tab1, text="タイトル")
 title_label.pack()
 title_entry = tk.Entry(tab1)
@@ -144,7 +143,6 @@ title_entry.pack()
 save_button = tk.Button(tab1, text="メモを保存", command=save_note)
 save_button.pack()
 
-# メモタブUI要素
 note_list = tk.Listbox(tab2)
 note_list.pack()
 note_list.bind('<<ListboxSelect>>', display_note_content)
