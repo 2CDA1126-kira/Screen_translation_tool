@@ -11,8 +11,8 @@ if tesseract_path not in os.environ["PATH"].split(os.pathsep):
 
 pytesseract.pytesseract.tesseract_cmd = os.path.join(tesseract_path, 'tesseract.exe')
 
-
 def capture_screen_area():
+    root.withdraw()  # ウィンドウを隠す
     capture_root = tk.Toplevel()
     capture_root.attributes('-fullscreen', True)
     capture_root.attributes('-alpha', 0.3)
@@ -44,21 +44,19 @@ def capture_screen_area():
 
     capture_root.mainloop()
     capture_root.destroy()
+    root.deiconify()  # ウィンドウを再表示
     return (start_x, start_y, end_x, end_y)
-
 
 def extract_text(image_path):
     image = Image.open(image_path)
     text = pytesseract.image_to_string(image, lang='eng') 
     return text
 
-
 def translate_text(text):
     cleaned_text = text.replace('\n', ' ').replace('\r', '').strip() 
     translator = Translator()
     translated = translator.translate(cleaned_text, src='en', dest='ja')  
     return translated.text
-
 
 def start_translation():
     region = capture_screen_area()
@@ -72,6 +70,12 @@ def start_translation():
     original_text_box.insert(tk.END, extracted_text)
     translated_text_box.insert(tk.END, translated_text)
 
+def manual_translate():
+    manual_text = original_text_box.get(1.0, tk.END).strip()
+    translated_text = translate_text(manual_text)
+    translated_text_box.delete(1.0, tk.END)
+    translated_text_box.insert(tk.END, translated_text)
+
 def save_note():
     title = title_entry.get()
     if title in notes:
@@ -81,28 +85,25 @@ def save_note():
         notes[title] = content
         update_note_list()
 
-def delete_note():
-    selected_title = note_list.get(note_list.curselection())
-    if selected_title:
-        del notes[selected_title]
-        update_note_list()
-        note_content_box.delete(1.0, tk.END)
-    else:
+def delete_note(): 
+    try: 
+        selected_title = note_list.get(note_list.curselection()) 
+        del notes[selected_title] 
+        update_note_list() 
+        note_content_box.delete(1.0, tk.END) 
+    except tk.TclError: 
         messagebox.showwarning("エラー", "削除するメモを選択してください")
-
 
 def update_note_list():
     note_list.delete(0, tk.END)
     for title in notes.keys():
         note_list.insert(tk.END, title)
 
-
 def display_note_content(event):
     selected_title = note_list.get(note_list.curselection())
     note_content = notes[selected_title]
     note_content_box.delete(1.0, tk.END)
     note_content_box.insert(tk.END, note_content)
-
 
 notes = {}
 
@@ -134,6 +135,9 @@ translated_text_box.grid(row=1, column=1)
 
 translate_button = tk.Button(tab1, text="翻訳する文を選択", command=start_translation)
 translate_button.pack()
+
+manual_translate_button = tk.Button(tab1, text="手動翻訳", command=manual_translate)
+manual_translate_button.pack()
 
 title_label = Label(tab1, text="タイトル")
 title_label.pack()
